@@ -14,7 +14,7 @@ func (m *MockWriter) Header() (h http.Header) {
 	return http.Header{}
 }
 
-func (m *MockWriter) Write(p []byte)(int, error) {
+func (m *MockWriter) Write(p []byte) (int, error) {
 	m.response = string(p)
 	return 1, nil
 }
@@ -24,22 +24,18 @@ func (m *MockWriter) WriteString(s string) {
 
 func (m *MockWriter) WriteHeader(int) {}
 
-
 type expectedResponse struct {
-	method string
+	method   string
 	response string
 }
-
 
 var testMethods []expectedResponse = []expectedResponse{
 	{http.MethodGet, "GET okay!"},
 	{http.MethodPost, "POST okay!"},
 }
 
-func TestHTTPMethods(t *testing.T){
+func TestHTTPMethods(t *testing.T) {
 	r := New()
-
-
 
 	r.GET("/", func(rw http.ResponseWriter, r *http.Request) {
 		io.WriteString(rw, "GET okay!")
@@ -62,7 +58,7 @@ func TestHTTPMethods(t *testing.T){
 	}
 }
 
-func TestNotFound(t *testing.T){
+func TestNotFound(t *testing.T) {
 	r := New()
 	w := new(MockWriter)
 
@@ -71,7 +67,7 @@ func TestNotFound(t *testing.T){
 		"404 page not found\n",
 	}
 
-	req, _ := http.NewRequest(http.MethodGet, "/not/found",  nil)
+	req, _ := http.NewRequest(http.MethodGet, "/not/found", nil)
 
 	r.ServeHTTP(w, req)
 

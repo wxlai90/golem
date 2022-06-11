@@ -23,12 +23,12 @@ func TestAddPathToHandlers(t *testing.T) {
 			handler:       handler,
 			requestedPath: "/user/abc",
 		},
-		{
-			description:   "it should add a path with parameters",
-			path:          "/product/:name",
-			handler:       handler,
-			requestedPath: "/product/abc",
-		},
+		// {
+		// 	description:   "it should add a path with parameters",
+		// 	path:          "/product/:name",
+		// 	handler:       handler,
+		// 	requestedPath: "/product/abc",
+		// },
 	}
 
 	for _, test := range testcases {
@@ -62,21 +62,21 @@ func TestSanitizePath(t *testing.T) {
 			path:        "/user/abc/",
 			expected:    "/user/abc",
 		},
-		{
-			description: "it should return a sanitized path if there is one parameter",
-			path:        "/user/:name",
-			expected:    "/user/*",
-		},
-		{
-			description: "it should return a sanitized path if there are multiple parameters",
-			path:        "/user/:a/:b/:c",
-			expected:    "/user/*/*/*",
-		},
-		{
-			description: "it should return a sanitized path if there are multiple parameters and trailing slash",
-			path:        "/user/:a/:b/:c/",
-			expected:    "/user/*/*/*",
-		},
+		// {
+		// 	description: "it should return a sanitized path if there is one parameter",
+		// 	path:        "/user/:name",
+		// 	expected:    "/user/*",
+		// },
+		// {
+		// 	description: "it should return a sanitized path if there are multiple parameters",
+		// 	path:        "/user/:a/:b/:c",
+		// 	expected:    "/user/*/*/*",
+		// },
+		// {
+		// 	description: "it should return a sanitized path if there are multiple parameters and trailing slash",
+		// 	path:        "/user/:a/:b/:c/",
+		// 	expected:    "/user/*/*/*",
+		// },
 	}
 
 	for _, test := range testcases {

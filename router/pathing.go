@@ -34,42 +34,50 @@ func pathMatcher(method, path string) Handler {
 }
 
 func sanitizePath(path string) (string, map[int]string) {
+	empty := map[int]string{}
 	if path == "/" {
-		return path, map[int]string{}
+		return path, empty
 	}
 
-	sanePath := ""
-	i := 0
-	varc := -1
-	vars := map[int]string{}
-
-	for i < len(path) {
-		if path[i] == '/' {
-			varc++
-		}
-
-		if path[i] == ':' {
-			// means its a parameter
-			sanePath += "*"
-			name := ""
-			i++
-			for i < len(path) && path[i] != '/' {
-				name += string(path[i])
-				i++
-			}
-			vars[varc] = name
-			varc++
-		} else {
-			sanePath += string(path[i])
-			i++
-		}
+	if path[len(path)-1] == '/' {
+		path = string(path[:len(path)-1])
 	}
 
-	if sanePath[len(sanePath)-1] == '/' {
-		sanePath = sanePath[:len(sanePath)-1]
-	}
+	return path, empty
 
-	return sanePath, vars
+	// TODO: revisit params in url
+	// sanePath := ""
+	// i := 0
+	// varc := -1
+	// vars := map[int]string{}
+
+	// for i < len(path) {
+	// 	if path[i] == '/' {
+	// 		varc++
+	// 	}
+
+	// 	if path[i] == ':' {
+	// 		// means its a parameter
+	// 		sanePath += "*"
+	// 		name := ""
+	// 		i++
+	// 		for i < len(path) && path[i] != '/' {
+	// 			name += string(path[i])
+	// 			i++
+	// 		}
+	// 		vars[varc] = name
+	// 		varc++
+	// 	} else {
+	// 		sanePath += string(path[i])
+	// 		i++
+	// 	}
+	// }
+
+	// if sanePath[len(sanePath)-1] == '/' {
+	// 	sanePath = sanePath[:len(sanePath)-1]
+	// }
+
+	// return sanePath, vars
 }
 
 // addPathToHandlers adds a Handler with a path based on segments for easy retrieval

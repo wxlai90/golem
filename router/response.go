@@ -11,6 +11,7 @@ type Response struct {
 }
 
 func (r Response) JSON(response interface{}) {
+	r.W.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(r.W).Encode(response)
 }
 

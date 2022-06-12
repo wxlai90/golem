@@ -3,11 +3,13 @@ package router
 import (
 	"net/http"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-var handlers map[string]map[string]Node = map[string]map[string]Node{}
-
-type Router struct{}
+type Router struct {
+	InnerRouter *httprouter.Router
+}
 
 func (r *Router) Listen(addr string, fn ...func()) {
 	if len(fn) > 0 && fn[0] != nil {
@@ -32,33 +34,34 @@ type TokenizedPath struct {
 type Handler func(Request, Response)
 
 func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := pathMatcher(r.Method, r.URL.Path)
-	if handler == nil {
-		http.NotFound(w, r)
-		return
-	}
+	ro.InnerRouter.ServeHTTP(w, r)
+}
 
-	req := NewRequest(r)
-	res := NewResponse(w)
-	handler(req, res)
+func adapter(handler Handler) httprouter.Handle {
+	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req := NewRequest(r, p)
+		res := NewResponse(rw)
+
+		handler(req, res)
+	}
 }
 
 func (r *Router) GET(path string, handler Handler) {
-	addPathToHandlers(http.MethodGet, path, handler)
+	r.InnerRouter.GET(path, adapter(handler))
 }
 
 func (r *Router) POST(path string, handler Handler) {
-	addPathToHandlers(http.MethodPost, path, handler)
+	r.InnerRouter.POST(path, adapter(handler))
 }
 
 func (r *Router) PUT(path string, handler Handler) {
-	addPathToHandlers(http.MethodPut, path, handler)
+	r.InnerRouter.PUT(path, adapter(handler))
 }
 
 func (r *Router) PATCH(path string, handler Handler) {
-	addPathToHandlers(http.MethodPatch, path, handler)
+	r.InnerRouter.PATCH(path, adapter(handler))
 }
 
 func (r *Router) DELETE(path string, handler Handler) {
-	addPathToHandlers(http.MethodDelete, path, handler)
+	r.InnerRouter.DELETE(path, adapter(handler))
 }

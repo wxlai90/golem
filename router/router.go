@@ -38,10 +38,8 @@ func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := Request{}
-	res := Response{
-		W: w,
-	}
+	req := NewRequest(r)
+	res := NewResponse(w)
 	handler(req, res)
 }
 

@@ -12,7 +12,7 @@ Resembles Express for Node, features are implemented on a need basis. Default st
 go get -u github.com/wxlai90/golem
 ```
 
-Code Example:
+### Quickstart
 
 ```go
 package main
@@ -83,4 +83,12 @@ req.Cookies contains a map[string]string of cookies pairs
 if value, ok :=req.Cookies("name"); ok {
 	// ... do something with value
 }
+```
+
+## Status Code
+
+### Set Status
+
+```go
+res.Status(http.StatusOK).Send("All good")
 ```

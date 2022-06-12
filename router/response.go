@@ -33,3 +33,8 @@ func (r Response) Cookie(key, value string) {
 		Value: value,
 	})
 }
+
+func (r Response) Status(statusCode int) Response {
+	r.W.WriteHeader(statusCode)
+	return r
+}

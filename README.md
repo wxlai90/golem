@@ -8,7 +8,9 @@ Resembles Express for Node, features are implemented on a need basis. Default st
 
 ### To install
 
-> go get -u github.com/wxlai90/golem
+```sh
+go get -u github.com/wxlai90/golem
+```
 
 Code Example:
 

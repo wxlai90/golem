@@ -66,3 +66,21 @@ See the responses at:
 http://localhost:5000/
 
 http://localhost:5000/todos
+
+## Cookies
+
+### Set Cookie
+
+```go
+res.Cookie("name", "value")
+```
+
+### Get Cookie
+
+req.Cookies contains a map[string]string of cookies pairs
+
+```go
+if value, ok :=req.Cookies("name"); ok {
+	// ... do something with value
+}
+```

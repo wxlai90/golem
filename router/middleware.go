@@ -31,7 +31,7 @@ func (r *Router) Use(mw middleware) {
 	curr = curr.next
 }
 
-func traverseMiddlewares(req *Request, res *Response) bool {
+func traverseGlobalMiddlewares(req *Request, res *Response) bool {
 	start := head
 	for start != nil {
 		cont := false
@@ -42,6 +42,20 @@ func traverseMiddlewares(req *Request, res *Response) bool {
 		}
 
 		start = start.next
+	}
+
+	return true
+}
+
+func traverseLocalMiddlewares(req *Request, res *Response, middlewares []middleware) bool {
+	for _, mw := range middlewares {
+		cont := false
+		mw(req, res, func() {
+			cont = true
+		})
+		if !cont {
+			return false
+		}
 	}
 
 	return true

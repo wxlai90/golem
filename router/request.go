@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -11,6 +12,11 @@ type Request struct {
 	Cookies map[string]string
 	Params  map[string]string
 	Query   map[string]string
+	Bag     Bag
+}
+
+type Bag struct {
+	bag map[string]interface{}
 }
 
 func NewRequest(r *http.Request, p httprouter.Params) *Request {
@@ -18,6 +24,7 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 		R: r,
 	}
 
+	req.initBag()
 	req.parseCookies()
 	req.parseQueries()
 	req.parseParams(p)
@@ -45,4 +52,23 @@ func (r *Request) parseQueries() {
 	for k, v := range values {
 		r.Query[k] = v[0]
 	}
+}
+
+func (r *Request) initBag() {
+	r.Bag = Bag{
+		bag: map[string]interface{}{},
+	}
+}
+
+func (r *Request) Put(key string, value interface{}) {
+	// ignore possibility of overwriting
+	r.Bag.bag[key] = value
+}
+
+func (r *Request) Get(key string) (interface{}, error) {
+	if value, ok := r.Bag.bag[key]; ok {
+		return value, nil
+	}
+
+	return nil, errors.New("Key not found.")
 }

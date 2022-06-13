@@ -10,12 +10,12 @@ type Response struct {
 	W http.ResponseWriter
 }
 
-func NewResponse(w http.ResponseWriter) Response {
+func NewResponse(w http.ResponseWriter) *Response {
 	res := Response{
 		W: w,
 	}
 
-	return res
+	return &res
 }
 
 func (r Response) JSON(response interface{}) {

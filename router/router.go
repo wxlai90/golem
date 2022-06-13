@@ -24,14 +24,7 @@ func (r *Router) Listen(addr string, fn ...func()) {
 	http.ListenAndServe(addr, r)
 }
 
-type TokenizedPath struct {
-	originalPath string
-	wildcardPath string
-	wildcards    []string
-	handler      Handler
-}
-
-type Handler func(Request, Response)
+type Handler func(*Request, *Response)
 
 func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ro.InnerRouter.ServeHTTP(w, r)
@@ -41,6 +34,11 @@ func adapter(handler Handler) httprouter.Handle {
 	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		req := NewRequest(r, p)
 		res := NewResponse(rw)
+
+		cont := traverseMiddlewares(req, res)
+		if !cont {
+			return
+		}
 
 		handler(req, res)
 	}
@@ -64,4 +62,12 @@ func (r *Router) PATCH(path string, handler Handler) {
 
 func (r *Router) DELETE(path string, handler Handler) {
 	r.InnerRouter.DELETE(path, adapter(handler))
+}
+
+func (r *Router) HEAD(path string, handler Handler) {
+	r.InnerRouter.HEAD(path, adapter(handler))
+}
+
+func (r *Router) OPTIONS(path string, handler Handler) {
+	r.InnerRouter.OPTIONS(path, adapter(handler))
 }

@@ -12,7 +12,7 @@ type middlewareNode struct {
 
 type Next func()
 
-type middleware func(next Next, req *Request, res *Response)
+type middleware func(req *Request, res *Response, next Next)
 
 // Use() exposes a middleware system
 func (r *Router) Use(mw middleware) {
@@ -35,10 +35,8 @@ func traverseMiddlewares(req *Request, res *Response) bool {
 	start := head
 	for start != nil {
 		cont := false
-		start.middleware(func() {
-			cont = true
-		}, req, res)
 
+		start.middleware(req, res, func() { cont = true })
 		if !cont {
 			return false
 		}

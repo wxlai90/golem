@@ -92,3 +92,107 @@ if value, ok :=req.Cookies("name"); ok {
 ```go
 res.Status(http.StatusOK).Send("All good")
 ```
+
+## Middlewares
+
+### Global Middlewares
+
+```go
+func main() {
+	app := golem.New()
+
+	app.Use(func(req *router.Request, res *router.Response, next router.Next) {
+		log.Printf("Incoming [%s] request to %s\n", req.R.Method, req.R.URL)
+		next()
+	})
+
+	app.GET("/", func(req *router.Request, res *router.Response) {
+		res.Send("Hello World")
+	})
+
+	app.Listen(PORT, func() {
+		fmt.Printf("Listening on %s\n", PORT)
+	})
+}
+```
+
+Output
+
+```sh
+$ Listening on 5000
+$ 2022/06/13 20:14:23 Incoming [GET] request to /
+```
+
+### Route specific middlewares
+
+Add route specific middlewares by passing in as last parameter. Slightly different from Express but necessary due to go's variadic parameters requirements.
+
+```go
+func main() {
+	app := golem.New()
+
+	logger := func(req *router.Request, res *router.Response, next router.Next) {
+		log.Printf("Incoming [%s] request to %s\n", req.R.Method, req.R.URL)
+		next()
+	}
+
+	app.GET("/", func(req *router.Request, res *router.Response) {
+		res.Send("Hello World")
+	}, logger)
+
+	app.Listen(PORT, func() {
+		fmt.Printf("Listening on %s\n", PORT)
+	})
+}
+```
+
+Output
+
+```sh
+$ Listening on 5000
+$ 2022/06/13 20:17:19 Incoming [GET] request to /
+```
+
+## Bag (key, value) passing
+
+Bag exposes a Put() and Get() interface for adding data into the request object after each middleware call.
+
+In order to cater to any type, Get() returns an empty interface
+
+```go
+interface{}
+```
+
+A type assertion is required for any meaningful usage. However, if we were simply returning it as JSON, then type assertion is optional.
+
+Example
+
+```go
+type Todo struct {
+	Description string
+	Done        bool
+}
+
+func main() {
+	app := golem.New()
+
+	logger := func(req *router.Request, res *router.Response, next router.Next) {
+		todo := Todo{
+			Description: "Do something",
+			Done:        false,
+		}
+		req.Put("todo", todo)
+		next()
+	}
+
+	app.GET("/", func(req *router.Request, res *router.Response) {
+		if todo, ok := req.Get("todo"); ok {
+			res.JSON(todo)
+			return
+		}
+
+		res.Send("Couldn't find todo")
+
+	}, logger)
+}
+```

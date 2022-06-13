@@ -1,7 +1,6 @@
 package router
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -65,10 +64,10 @@ func (r *Request) Put(key string, value interface{}) {
 	r.Bag.bag[key] = value
 }
 
-func (r *Request) Get(key string) (interface{}, error) {
+func (r *Request) Get(key string) (interface{}, bool) {
 	if value, ok := r.Bag.bag[key]; ok {
-		return value, nil
+		return value, ok
 	}
 
-	return nil, errors.New("Key not found.")
+	return nil, false
 }

@@ -1,10 +1,8 @@
 # golem
 
-<img src="https://static.wikia.nocookie.net/clashofclans/images/c/c2/Golem_info.png/revision/latest?cb=20170927231256" />
+<img style="display: block;width:250px;margin: 0 auto;" src="https://static.wikia.nocookie.net/clashofclans/images/c/c2/Golem_info.png/revision/latest?cb=20170927231256" />
 
-A WIP go http router.
-
-Resembles Express for Node, features are implemented on a need basis. Default state is **broken**.
+Resembles Express for Node, features are implemented on a need basis.
 
 ### To install
 
@@ -176,7 +174,7 @@ type Todo struct {
 func main() {
 	app := golem.New()
 
-	logger := func(req *router.Request, res *router.Response, next router.Next) {
+	createTodo := func(req *router.Request, res *router.Response, next router.Next) {
 		todo := Todo{
 			Description: "Do something",
 			Done:        false,
@@ -193,6 +191,6 @@ func main() {
 
 		res.Send("Couldn't find todo")
 
-	}, logger)
+	}, createTodo)
 }
 ```

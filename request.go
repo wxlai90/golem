@@ -1,10 +1,21 @@
-package router
+package golem
 
 import (
+	"encoding/json"
+	"io"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 )
+
+type Body struct {
+	RawBytes []byte
+}
+
+func (b *Body) Unmarshal(m interface{}) error {
+	return json.Unmarshal(b.RawBytes, m)
+}
 
 type Request struct {
 	R       *http.Request
@@ -12,6 +23,7 @@ type Request struct {
 	Params  map[string]string
 	Query   map[string]string
 	Bag     Bag
+	Body    *Body
 }
 
 type Bag struct {
@@ -27,6 +39,7 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 	req.parseCookies()
 	req.parseQueries()
 	req.parseParams(p)
+	req.parseRequestBody()
 
 	return &req
 }
@@ -50,6 +63,18 @@ func (r *Request) parseQueries() {
 	values := r.R.URL.Query()
 	for k, v := range values {
 		r.Query[k] = v[0]
+	}
+}
+
+func (r *Request) parseRequestBody() {
+	body, err := io.ReadAll(r.R.Body)
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer r.R.Body.Close()
+
+	r.Body = &Body{
+		RawBytes: body,
 	}
 }
 

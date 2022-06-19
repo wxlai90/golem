@@ -1,4 +1,4 @@
-package router
+package golem
 
 var (
 	head *middlewareNode

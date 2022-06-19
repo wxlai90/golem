@@ -2,11 +2,10 @@ package golem
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/wxlai90/golem/router"
 )
 
-func New() *router.Router {
-	return &router.Router{
+func New() *Router {
+	return &Router{
 		InnerRouter: httprouter.New(),
 	}
 }

@@ -90,9 +90,6 @@ func (r *Request) Put(key string, value interface{}) {
 }
 
 func (r *Request) Get(key string) (interface{}, bool) {
-	if value, ok := r.Bag.bag[key]; ok {
-		return value, ok
-	}
-
-	return nil, false
+	value, ok := r.Bag.bag[key]
+	return value, ok
 }

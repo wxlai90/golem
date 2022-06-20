@@ -1,6 +1,7 @@
 package golem
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,20 +12,48 @@ type Router struct {
 	InnerRouter *httprouter.Router
 }
 
+func (r *Router) Routes(prefix string, subRouter *SubRouter) {
+	for _, subRoute := range subRouter.nodes {
+		subRoute.middlewares = append(subRoute.middlewares, subRouter.globalMiddlewares...)
+		fullPath := fmt.Sprintf("%s%s", prefix, subRoute.path)
+
+		switch subRoute.method {
+		case http.MethodGet:
+			r.GET(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodPost:
+			r.POST(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodPut:
+			r.PUT(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodPatch:
+			r.PATCH(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodDelete:
+			r.DELETE(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodHead:
+			r.HEAD(fullPath, subRoute.handler, subRoute.middlewares...)
+		case http.MethodOptions:
+			r.OPTIONS(fullPath, subRoute.handler, subRoute.middlewares...)
+		}
+	}
+}
+
 func (r *Router) Listen(addr string, fn ...func()) {
 	if len(fn) > 0 && fn[0] != nil {
 		fn[0]()
 	}
 
 	if !strings.Contains(addr, ":") {
-		// assuming only port number was passed in, append ":" to port
 		addr = ":" + addr
 	}
 
-	http.ListenAndServe(addr, r)
+	server := &http.Server{
+		Addr:    addr,
+		Handler: r,
+	}
+
+	server.ListenAndServe()
 }
 
-type Handler func(*Request, *Response)
+type Handler func(req *Request, res *Response)
 
 func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ro.InnerRouter.ServeHTTP(w, r)

@@ -9,3 +9,9 @@ func New() *Router {
 		InnerRouter: httprouter.New(),
 	}
 }
+
+func NewSubRouter() *SubRouter {
+	return &SubRouter{
+		nodes: []subRouterNode{},
+	}
+}

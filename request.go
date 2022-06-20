@@ -18,7 +18,7 @@ func (b *Body) Unmarshal(m interface{}) error {
 }
 
 type Request struct {
-	R       *http.Request
+	*http.Request
 	Cookies map[string]string
 	Params  map[string]string
 	Query   map[string]string
@@ -32,7 +32,7 @@ type Bag struct {
 
 func NewRequest(r *http.Request, p httprouter.Params) *Request {
 	req := Request{
-		R: r,
+		Request: r,
 	}
 
 	req.initBag()
@@ -46,7 +46,7 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 
 func (r *Request) parseCookies() {
 	r.Cookies = map[string]string{}
-	for _, cookie := range r.R.Cookies() {
+	for _, cookie := range r.Request.Cookies() {
 		r.Cookies[cookie.Name] = cookie.Value
 	}
 }
@@ -60,18 +60,18 @@ func (r *Request) parseParams(params httprouter.Params) {
 
 func (r *Request) parseQueries() {
 	r.Query = map[string]string{}
-	values := r.R.URL.Query()
+	values := r.Request.URL.Query()
 	for k, v := range values {
 		r.Query[k] = v[0]
 	}
 }
 
 func (r *Request) parseRequestBody() {
-	body, err := io.ReadAll(r.R.Body)
+	body, err := io.ReadAll(r.Request.Body)
 	if err != nil {
 		log.Panicln(err)
 	}
-	defer r.R.Body.Close()
+	defer r.Request.Body.Close()
 
 	r.Body = &Body{
 		RawBytes: body,

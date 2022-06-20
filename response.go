@@ -7,34 +7,34 @@ import (
 )
 
 type Response struct {
-	W http.ResponseWriter
+	http.ResponseWriter
 }
 
 func NewResponse(w http.ResponseWriter) *Response {
 	res := Response{
-		W: w,
+		ResponseWriter: w,
 	}
 
 	return &res
 }
 
 func (r Response) JSON(response interface{}) {
-	r.W.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(r.W).Encode(response)
+	r.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(r).Encode(response)
 }
 
 func (r Response) Send(response string) {
-	io.WriteString(r.W, response)
+	io.WriteString(r, response)
 }
 
 func (r Response) Cookie(key, value string) {
-	http.SetCookie(r.W, &http.Cookie{
+	http.SetCookie(r, &http.Cookie{
 		Name:  key,
 		Value: value,
 	})
 }
 
 func (r Response) Status(statusCode int) Response {
-	r.W.WriteHeader(statusCode)
+	r.WriteHeader(statusCode)
 	return r
 }

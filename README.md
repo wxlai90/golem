@@ -34,11 +34,11 @@ type todo struct {
 func main() {
 	app := golem.New()
 
-	app.GET("/", func(req router.Request, res router.Response) {
+	app.GET("/", func(req *golem.Request, res *golem.Response) {
 		res.Send("Hello World")
 	})
 
-	app.GET("/todos", func(req router.Request, res router.Response) {
+	app.GET("/todos", func(req *golem.Request, res *golem.Response) {
 		todos := []todo{
 			{
 				Description: "Buy groceries",
@@ -99,12 +99,12 @@ res.Status(http.StatusOK).Send("All good")
 func main() {
 	app := golem.New()
 
-	app.Use(func(req *router.Request, res *router.Response, next router.Next) {
+	app.Use(func(req *golem.Request, res *golem.Response, next router.Next) {
 		log.Printf("Incoming [%s] request to %s\n", req.R.Method, req.R.URL)
 		next()
 	})
 
-	app.GET("/", func(req *router.Request, res *router.Response) {
+	app.GET("/", func(req *golem.Request, res *golem.Response) {
 		res.Send("Hello World")
 	})
 
@@ -129,12 +129,12 @@ Add route specific middlewares by passing in as last parameter. Slightly differe
 func main() {
 	app := golem.New()
 
-	logger := func(req *router.Request, res *router.Response, next router.Next) {
+	logger := func(req *golem.Request, res *golem.Response, next router.Next) {
 		log.Printf("Incoming [%s] request to %s\n", req.R.Method, req.R.URL)
 		next()
 	}
 
-	app.GET("/", func(req *router.Request, res *router.Response) {
+	app.GET("/", func(req *golem.Request, res *golem.Response) {
 		res.Send("Hello World")
 	}, logger)
 
@@ -174,7 +174,7 @@ type Todo struct {
 func main() {
 	app := golem.New()
 
-	createTodo := func(req *router.Request, res *router.Response, next router.Next) {
+	createTodo := func(req *golem.Request, res *golem.Response, next router.Next) {
 		todo := Todo{
 			Description: "Do something",
 			Done:        false,
@@ -183,7 +183,7 @@ func main() {
 		next()
 	}
 
-	app.GET("/", func(req *router.Request, res *router.Response) {
+	app.GET("/", func(req *golem.Request, res *golem.Response) {
 		if todo, ok := req.Get("todo"); ok {
 			res.JSON(todo)
 			return
@@ -192,5 +192,73 @@ func main() {
 		res.Send("Couldn't find todo")
 
 	}, createTodo)
+}
+```
+
+## Request Body
+
+req.Body exposes RawBytes as an option to handle it manually. Optionally, a convenience function Unmarshal() is provided for unmarshaling the request body into a struct.
+
+```go
+
+type Todo struct {
+	Description string
+	Done        bool
+}
+
+func main() {
+	app := golem.New()
+
+	app.POST("/todo/new", func(req *golem.Request, res *golem.Response) {
+		todo := &Todo{}
+		if err := req.Body.Unmarshal(todo); err == nil {
+			res.Send("Created todo")
+		}
+	})
+}
+```
+
+## Sub-routes
+
+Sub-routing is a useful way to define routes in separate files. There can be as many sub-routers as needed, with a common prefix to indicate a difference resource.
+
+Create a sub-router like so:
+
+```go
+var FruitsRouter *golem.SubRouter
+
+func init() {
+	FruitsRouter = golem.NewSubRouter()
+
+	FruitsRouter.GET("/", func(req *golem.Request, res *golem.Response) {
+		// returns all fruits
+	})
+
+	FruitsRouter.POST("/new", func(req *golem.Request, res *golem.Response) {
+		// creates a new fruit
+	})
+
+	FruitsRouter.DELETE("/:id", func(req *golem.Request, res *golem.Response) {
+		// deletes a new fruit
+	}, func(req *golem.Request, res *golem.Response, next golem.Next) {
+		// a route-specific middleware
+	})
+
+	// register a middleware for all routes in this sub-router
+	FruitsRouter.Use(middlewares.Logger)
+}
+```
+
+Register it into the main router:
+
+```go
+func main() {
+	app := golem.New()
+
+	app.Routes("/fruits", routes.FruitsRouter)
+
+	app.Listen(PORT, func() {
+		fmt.Printf("Listening on %s\n", PORT)
+	})
 }
 ```

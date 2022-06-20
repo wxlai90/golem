@@ -78,7 +78,17 @@ res.Cookie("name", "value")
 req.Cookies contains a map[string]string of cookies pairs
 
 ```go
-if value, ok :=req.Cookies("name"); ok {
+if value, ok := req.Cookies["name"]; ok {
+	// ... do something with value
+}
+```
+
+### Get URL Params
+
+req.Params contains a map[string]string of params
+
+```go
+if value, ok := req.Params["name"]; ok {
 	// ... do something with value
 }
 ```

@@ -14,17 +14,17 @@ type mock struct{}
 func TestUse(t *testing.T) {
 	testcases := []struct {
 		desc        string
-		middlewares []middleware
+		middlewares []Middleware
 	}{
 		{
 			desc: "should initialize linkedlist when there are middlewares",
-			middlewares: []middleware{
+			middlewares: []Middleware{
 				mockMiddleware,
 			},
 		},
 		{
 			desc: "should add more nodes into middlewares linkedlist",
-			middlewares: []middleware{
+			middlewares: []Middleware{
 				mockMiddleware,
 				mockMiddleware,
 			},
@@ -105,13 +105,13 @@ func TestTraverseLocalMiddlewares(t *testing.T) {
 	req := &Request{}
 	res := &Response{}
 
-	contMiddlewares := []middleware{
+	contMiddlewares := []Middleware{
 		contMiddleware,
 		contMiddleware,
 		contMiddleware,
 	}
 
-	stopMiddlewares := []middleware{
+	stopMiddlewares := []Middleware{
 		contMiddleware,
 		stopMiddleware,
 		contMiddleware,
@@ -119,7 +119,7 @@ func TestTraverseLocalMiddlewares(t *testing.T) {
 
 	testcases := []struct {
 		desc           string
-		middlewares    []middleware
+		middlewares    []Middleware
 		shouldContinue bool
 	}{
 		{

@@ -3,7 +3,6 @@ package golem
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -41,10 +40,6 @@ func (r *Router) Listen(addr string, fn ...func()) {
 		fn[0]()
 	}
 
-	if !strings.Contains(addr, ":") {
-		addr = ":" + addr
-	}
-
 	server := &http.Server{
 		Addr:    addr,
 		Handler: r,
@@ -59,7 +54,7 @@ func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ro.InnerRouter.ServeHTTP(w, r)
 }
 
-func adapter(handler Handler, middlewares []middleware) httprouter.Handle {
+func adapter(handler Handler, middlewares []Middleware) httprouter.Handle {
 	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		req := NewRequest(r, p)
 		res := NewResponse(rw)
@@ -80,30 +75,30 @@ func adapter(handler Handler, middlewares []middleware) httprouter.Handle {
 	}
 }
 
-func (r *Router) GET(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) GET(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.GET(path, adapter(handler, middlewares))
 }
 
-func (r *Router) POST(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) POST(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.POST(path, adapter(handler, middlewares))
 }
 
-func (r *Router) PUT(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) PUT(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.PUT(path, adapter(handler, middlewares))
 }
 
-func (r *Router) PATCH(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) PATCH(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.PATCH(path, adapter(handler, middlewares))
 }
 
-func (r *Router) DELETE(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) DELETE(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.DELETE(path, adapter(handler, middlewares))
 }
 
-func (r *Router) HEAD(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) HEAD(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.HEAD(path, adapter(handler, middlewares))
 }
 
-func (r *Router) OPTIONS(path string, handler Handler, middlewares ...middleware) {
+func (r *Router) OPTIONS(path string, handler Handler, middlewares ...Middleware) {
 	r.InnerRouter.OPTIONS(path, adapter(handler, middlewares))
 }

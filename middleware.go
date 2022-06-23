@@ -6,16 +6,16 @@ var (
 )
 
 type middlewareNode struct {
-	middleware middleware
+	middleware Middleware
 	next       *middlewareNode
 }
 
 type Next func()
 
-type middleware func(req *Request, res *Response, next Next)
+type Middleware func(req *Request, res *Response, next Next)
 
 // Use() exposes a middleware system
-func (r *Router) Use(mw middleware) {
+func (r *Router) Use(mw Middleware) {
 	if head == nil {
 		head = &middlewareNode{
 			middleware: mw,
@@ -47,7 +47,7 @@ func traverseGlobalMiddlewares(req *Request, res *Response) bool {
 	return true
 }
 
-func traverseLocalMiddlewares(req *Request, res *Response, middlewares []middleware) bool {
+func traverseLocalMiddlewares(req *Request, res *Response, middlewares []Middleware) bool {
 	for _, mw := range middlewares {
 		cont := false
 		mw(req, res, func() {

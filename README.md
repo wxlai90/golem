@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	PORT = "5000"
+	PORT = ":5000"
 )
 
 type todo struct {

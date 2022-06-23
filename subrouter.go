@@ -6,15 +6,15 @@ type subRouterNode struct {
 	path        string
 	method      string
 	handler     Handler
-	middlewares []middleware
+	middlewares []Middleware
 }
 
 type SubRouter struct {
-	globalMiddlewares []middleware
+	globalMiddlewares []Middleware
 	nodes             []subRouterNode
 }
 
-func (s *SubRouter) GET(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) GET(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodGet,
@@ -25,7 +25,7 @@ func (s *SubRouter) GET(path string, handler Handler, middlewares ...middleware)
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) POST(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) POST(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodPost,
@@ -36,7 +36,7 @@ func (s *SubRouter) POST(path string, handler Handler, middlewares ...middleware
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) PUT(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) PUT(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodPut,
@@ -47,7 +47,7 @@ func (s *SubRouter) PUT(path string, handler Handler, middlewares ...middleware)
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) PATCH(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) PATCH(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodPatch,
@@ -58,7 +58,7 @@ func (s *SubRouter) PATCH(path string, handler Handler, middlewares ...middlewar
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) DELETE(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) DELETE(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodDelete,
@@ -69,7 +69,7 @@ func (s *SubRouter) DELETE(path string, handler Handler, middlewares ...middlewa
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) HEAD(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) HEAD(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodHead,
@@ -80,7 +80,7 @@ func (s *SubRouter) HEAD(path string, handler Handler, middlewares ...middleware
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) OPTIONS(path string, handler Handler, middlewares ...middleware) {
+func (s *SubRouter) OPTIONS(path string, handler Handler, middlewares ...Middleware) {
 	newNode := subRouterNode{
 		path:        path,
 		method:      http.MethodOptions,
@@ -91,6 +91,6 @@ func (s *SubRouter) OPTIONS(path string, handler Handler, middlewares ...middlew
 	s.nodes = append(s.nodes, newNode)
 }
 
-func (s *SubRouter) Use(mw middleware) {
+func (s *SubRouter) Use(mw Middleware) {
 	s.globalMiddlewares = append(s.globalMiddlewares, mw)
 }

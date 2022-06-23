@@ -2,7 +2,6 @@ package golem
 
 import (
 	"net/http"
-	"net/url"
 	"testing"
 )
 
@@ -66,65 +65,5 @@ func TestRoutes(t *testing.T) {
 
 			r.Routes(test.prefix, sub)
 		}
-	}
-}
-
-// func TestAdapter(t *testing.T) {
-// 	expected := "abc"
-// 	handlerCalled := false
-// 	middlewareCalled := false
-// 	wrapped := adapter(func(req *Request, res *Response) {
-// 		handlerCalled = true
-// 		res.Send(expected)
-// 	}, []middleware{
-// 		func(req *Request, res *Response, next Next) {
-// 			next()
-// 		},
-// 		func(req *Request, res *Response, next Next) {
-// 			middlewareCalled = true
-// 			next()
-// 		},
-// 	})
-
-// 	if wrapped == nil {
-// 		t.Errorf("Expected wrapped handler from adapter, Gotten nil.\n")
-// 	}
-
-// 	r := &http.Request{
-// 		URL:  &url.URL{},
-// 		Body: &mockBody{},
-// 	}
-// 	rw := &mockResponseWriter{}
-// 	adapterRunning := make(chan struct{})
-// 	adapterDone := make(chan struct{})
-// 	go func() {
-// 		close(adapterRunning)
-// 		wrapped(rw, r, nil)
-// 		defer close(adapterDone)
-// 	}()
-
-// 	<-adapterRunning
-// 	if !handlerCalled {
-// 		t.Errorf("Expected handler to be called.")
-// 	}
-
-// 	if !middlewareCalled {
-// 		t.Errorf("Expected middlewares to be called.")
-// 	}
-// 	<-adapterDone
-// }
-
-func TestServeHTTP(t *testing.T) {
-	ro := New()
-	r := &http.Request{
-		URL:  &url.URL{},
-		Body: &mockBody{},
-	}
-	rw := &mockResponseWriter{}
-
-	ro.ServeHTTP(rw, r)
-
-	if rw.statusCode != http.StatusNotFound {
-		t.Errorf("Expected %d, Gotten %d\n", http.StatusNotFound, rw.statusCode)
 	}
 }

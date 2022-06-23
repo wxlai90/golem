@@ -28,7 +28,7 @@ func (m *mockBody) Close() error {
 type mockErrorBody struct{}
 
 func (m *mockErrorBody) Read(p []byte) (n int, err error) {
-	return 0, errors.New("some error")
+	return 0, errors.New("mock error for testing Read(), ignore.")
 }
 
 func (m *mockErrorBody) Close() error {

@@ -19,11 +19,12 @@ func (b *Body) Unmarshal(m interface{}) error {
 
 type Request struct {
 	*http.Request
-	Cookies map[string]string
-	Params  map[string]string
-	Query   map[string]string
-	Bag     Bag
-	Body    *Body
+	Cookies    map[string]string
+	Params     map[string]string
+	Query      map[string]string
+	Bag        Bag
+	Body       *Body
+	FormValues map[string]string
 }
 
 type Bag struct {
@@ -39,6 +40,7 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 	req.parseCookies()
 	req.parseQueries()
 	req.parseParams(p)
+	req.ParseForm()
 	req.parseRequestBody()
 
 	return &req
@@ -55,6 +57,15 @@ func (r *Request) parseParams(params httprouter.Params) {
 	r.Params = map[string]string{}
 	for _, param := range params {
 		r.Params[param.Key] = param.Value
+	}
+}
+
+func (r *Request) parseForm() {
+	MAX_MEMORY := int64(32 << 20)
+	r.ParseMultipartForm(MAX_MEMORY)
+
+	for k, v := range r.Form {
+		r.FormValues[k] = v[0]
 	}
 }
 

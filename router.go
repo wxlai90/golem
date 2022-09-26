@@ -70,6 +70,12 @@ func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: allow multiple static, use proper matching
+	if ro.staticFileServer != nil {
+		ro.staticFileServer.ServeHTTP(rw, r)
+		return
+	}
+
 	http.NotFound(rw, r)
 }
 
@@ -114,9 +120,8 @@ func (r *Router) OPTIONS(path string, handler Handler, middlewares ...Middleware
 	r.register(http.MethodOptions, path, handler, middlewares)
 }
 
-func (r *Router) ServeFiles(path string, dir http.Dir) {
+// TODO: allow multiple static
+func (r *Router) serveFiles(path string, dir http.Dir) {
 	fileServer := http.FileServer(dir)
-	r.GET(path, func(req *Request, res *Response) {
-		fileServer.ServeHTTP(res.ResponseWriter, req.Request)
-	})
+	r.staticFileServer = fileServer
 }

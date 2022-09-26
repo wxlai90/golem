@@ -51,9 +51,10 @@ type Handler func(req *Request, res *Response)
 type HandleFunc func(rw http.ResponseWriter, r *http.Request)
 
 func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	req := NewRequest(r)
+	res := NewResponse(rw)
+
 	if node, ok := ro.handlers[r.Method][r.URL.Path]; ok {
-		req := NewRequest(r)
-		res := NewResponse(rw)
 		cont := traverseGlobalMiddlewares(req, res)
 		if !cont {
 			return
@@ -72,6 +73,10 @@ func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	// TODO: allow multiple static, use proper matching
 	if ro.staticFileServer != nil {
+		cont := traverseGlobalMiddlewares(req, res)
+		if !cont {
+			return
+		}
 		ro.staticFileServer.ServeHTTP(rw, r)
 		return
 	}

@@ -1,8 +1,10 @@
 package golem
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -25,6 +27,7 @@ type Request struct {
 	Bag        Bag
 	Body       *Body
 	FormValues map[string]string
+	File       []byte
 }
 
 type Bag struct {
@@ -82,11 +85,13 @@ func (r *Request) parseRequestBody() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	defer r.Request.Body.Close()
+	r.Request.Body.Close()
 
 	r.Body = &Body{
 		RawBytes: body,
 	}
+
+	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 }
 
 func (r *Request) initBag() {

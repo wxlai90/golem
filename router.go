@@ -3,12 +3,10 @@ package golem
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type Router struct {
-	InnerRouter *httprouter.Router
+	handlers map[string]map[string]handlerNode
 }
 
 func (r *Router) Routes(prefix string, subRouter *SubRouter) {
@@ -49,56 +47,68 @@ func (r *Router) Listen(addr string, fn ...func()) {
 }
 
 type Handler func(req *Request, res *Response)
+type HandleFunc func(rw http.ResponseWriter, r *http.Request)
 
-func (ro *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ro.InnerRouter.ServeHTTP(w, r)
-}
-
-func adapter(handler Handler, middlewares []Middleware) httprouter.Handle {
-	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		req := NewRequest(r, p)
+func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	if node, ok := ro.handlers[r.Method][r.URL.Path]; ok {
+		req := NewRequest(r)
 		res := NewResponse(rw)
-
 		cont := traverseGlobalMiddlewares(req, res)
 		if !cont {
 			return
 		}
 
-		if len(middlewares) > 0 {
-			cont = traverseLocalMiddlewares(req, res, middlewares)
+		if len(node.middlewares) > 0 {
+			cont = traverseLocalMiddlewares(req, res, node.middlewares)
 			if !cont {
 				return
 			}
 		}
 
-		handler(req, res)
+		node.handler(req, res)
+		return
 	}
+
+	http.NotFound(rw, r)
+}
+
+func (r *Router) register(method, path string, handler Handler, middlewares []Middleware) {
+	if _, exists := r.handlers[method]; !exists {
+		r.handlers[method] = make(map[string]handlerNode)
+	}
+
+	node := handlerNode{
+		handler:     handler,
+		middlewares: middlewares,
+	}
+
+	r.handlers[method][path] = node
 }
 
 func (r *Router) GET(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.GET(path, adapter(handler, middlewares))
+	r.register(http.MethodGet, path, handler, middlewares)
 }
 
 func (r *Router) POST(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.POST(path, adapter(handler, middlewares))
+	r.register(http.MethodPost, path, handler, middlewares)
 }
 
 func (r *Router) PUT(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.PUT(path, adapter(handler, middlewares))
+	r.register(http.MethodPut, path, handler, middlewares)
 }
 
 func (r *Router) PATCH(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.PATCH(path, adapter(handler, middlewares))
+	r.register(http.MethodPatch, path, handler, middlewares)
 }
 
 func (r *Router) DELETE(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.DELETE(path, adapter(handler, middlewares))
+	r.register(http.MethodDelete, path, handler, middlewares)
 }
 
 func (r *Router) HEAD(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.HEAD(path, adapter(handler, middlewares))
+	r.register(http.MethodHead, path, handler, middlewares)
 }
 
 func (r *Router) OPTIONS(path string, handler Handler, middlewares ...Middleware) {
-	r.InnerRouter.OPTIONS(path, adapter(handler, middlewares))
+	r.register(http.MethodOptions, path, handler, middlewares)
 }

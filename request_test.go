@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"testing"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type phone struct {
@@ -40,8 +38,7 @@ func TestUnmarshal(t *testing.T) {
 		URL:  &url.URL{},
 		Body: &mockBody{},
 	}
-	params := httprouter.Params{}
-	r := NewRequest(req, params)
+	r := NewRequest(req)
 
 	expected := "a"
 
@@ -64,29 +61,8 @@ func TestParseCookies(t *testing.T) {
 			"Cookie": {fmt.Sprintf("name=%s;", expected)},
 		},
 	}
-	params := httprouter.Params{}
-	r := NewRequest(req, params)
+	r := NewRequest(req)
 	gotten, _ := r.Cookies["name"]
-
-	if gotten != expected {
-		t.Errorf("Expected %s, Gotten %s\n", expected, gotten)
-	}
-}
-
-func TestParseParams(t *testing.T) {
-	expected := "abc"
-	req := &http.Request{
-		URL:  &url.URL{},
-		Body: &mockBody{},
-	}
-	params := httprouter.Params{
-		{
-			Key:   "name",
-			Value: expected,
-		},
-	}
-	r := NewRequest(req, params)
-	gotten, _ := r.Params["name"]
 
 	if gotten != expected {
 		t.Errorf("Expected %s, Gotten %s\n", expected, gotten)
@@ -97,12 +73,11 @@ func TestParseQueries(t *testing.T) {
 	expected := "abc"
 	req := &http.Request{
 		URL: &url.URL{
-			RawQuery: "name=abc;",
+			RawQuery: "name=abc",
 		},
 		Body: &mockBody{},
 	}
-	params := httprouter.Params{}
-	r := NewRequest(req, params)
+	r := NewRequest(req)
 	gotten, _ := r.Query["name"]
 
 	if gotten != expected {
@@ -115,14 +90,13 @@ func TestParseRequestBody(t *testing.T) {
 		URL:  &url.URL{},
 		Body: &mockErrorBody{},
 	}
-	params := httprouter.Params{}
 
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("Req body read should panic but did not.")
 		}
 	}()
-	NewRequest(req, params)
+	NewRequest(req)
 }
 
 func TestBag(t *testing.T) {
@@ -131,8 +105,7 @@ func TestBag(t *testing.T) {
 		URL:  &url.URL{},
 		Body: &mockBody{},
 	}
-	params := httprouter.Params{}
-	r := NewRequest(req, params)
+	r := NewRequest(req)
 	r.Put("name", expected)
 
 	if gotten, ok := r.Get("name"); ok {

@@ -2,14 +2,12 @@ package golem
 
 import (
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type notFoundHandler struct{}
 
 func (n *notFoundHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	req := NewRequest(r, httprouter.Params{})
+	req := NewRequest(r)
 	res := NewResponse(rw)
 
 	cont := traverseGlobalMiddlewares(req, res)

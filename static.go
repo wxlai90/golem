@@ -13,5 +13,5 @@ func checkAndAppendWildcard(path string) string {
 
 func (r *Router) Static(path string, dir http.Dir) {
 	path = checkAndAppendWildcard(path)
-	r.InnerRouter.ServeFiles(path, dir)
+	// r.ServeFiles(path, dir)
 }

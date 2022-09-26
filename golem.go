@@ -1,16 +1,8 @@
 package golem
 
-import (
-	"github.com/julienschmidt/httprouter"
-)
-
 func New() *Router {
-	r := httprouter.New()
-	nf := &notFoundHandler{}
-	r.NotFound = nf
-
 	return &Router{
-		InnerRouter: r,
+		handlers: make(map[string]map[string]handlerNode),
 	}
 }
 

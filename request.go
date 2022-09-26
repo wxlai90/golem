@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type Body struct {
@@ -34,7 +32,7 @@ type Bag struct {
 	bag map[string]interface{}
 }
 
-func NewRequest(r *http.Request, p httprouter.Params) *Request {
+func NewRequest(r *http.Request) *Request {
 	req := Request{
 		Request: r,
 	}
@@ -42,7 +40,6 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 	req.initBag()
 	req.parseCookies()
 	req.parseQueries()
-	req.parseParams(p)
 	req.ParseForm()
 	req.parseRequestBody()
 
@@ -53,13 +50,6 @@ func (r *Request) parseCookies() {
 	r.Cookies = map[string]string{}
 	for _, cookie := range r.Request.Cookies() {
 		r.Cookies[cookie.Name] = cookie.Value
-	}
-}
-
-func (r *Request) parseParams(params httprouter.Params) {
-	r.Params = map[string]string{}
-	for _, param := range params {
-		r.Params[param.Key] = param.Value
 	}
 }
 
@@ -74,7 +64,7 @@ func (r *Request) parseForm() {
 
 func (r *Request) parseQueries() {
 	r.Query = map[string]string{}
-	values := r.Request.URL.Query()
+	values := r.URL.Query()
 	for k, v := range values {
 		r.Query[k] = v[0]
 	}

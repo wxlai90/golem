@@ -6,8 +6,7 @@ import (
 )
 
 type Router struct {
-	handlers         map[string]map[string]handlerNode
-	staticFileServer http.Handler
+	handlers map[string]map[string]handlerNode
 }
 
 func (r *Router) Routes(prefix string, subRouter *SubRouter) {
@@ -71,16 +70,6 @@ func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: allow multiple static, use proper matching
-	if ro.staticFileServer != nil {
-		cont := traverseGlobalMiddlewares(req, res)
-		if !cont {
-			return
-		}
-		ro.staticFileServer.ServeHTTP(rw, r)
-		return
-	}
-
 	http.NotFound(rw, r)
 }
 
@@ -123,10 +112,4 @@ func (r *Router) HEAD(path string, handler Handler, middlewares ...Middleware) {
 
 func (r *Router) OPTIONS(path string, handler Handler, middlewares ...Middleware) {
 	r.register(http.MethodOptions, path, handler, middlewares)
-}
-
-// TODO: allow multiple static
-func (r *Router) serveFiles(path string, dir http.Dir) {
-	fileServer := http.FileServer(dir)
-	r.staticFileServer = fileServer
 }

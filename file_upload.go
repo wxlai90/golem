@@ -14,6 +14,10 @@ type FileUploadConfig struct {
 }
 
 func FileUpload(config FileUploadConfig) Middleware {
+	if config.Filename == "" || config.Destination == "" {
+		panic("FileUploadConfig values must be filled!")
+	}
+
 	return func(req *Request, res *Response, next Next) {
 		file, fileHeaders, err := req.FormFile(config.Filename)
 		if err != nil {

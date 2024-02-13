@@ -6,7 +6,7 @@ import (
 )
 
 type Router struct {
-	handlers map[string]map[string]handlerNode
+	mux *http.ServeMux
 }
 
 func (r *Router) Routes(prefix string, subRouter *SubRouter) {
@@ -16,19 +16,19 @@ func (r *Router) Routes(prefix string, subRouter *SubRouter) {
 
 		switch subRoute.method {
 		case http.MethodGet:
-			r.GET(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.GET(fullPath, subRoute.handler)
 		case http.MethodPost:
-			r.POST(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.POST(fullPath, subRoute.handler)
 		case http.MethodPut:
-			r.PUT(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.PUT(fullPath, subRoute.handler)
 		case http.MethodPatch:
-			r.PATCH(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.PATCH(fullPath, subRoute.handler)
 		case http.MethodDelete:
-			r.DELETE(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.DELETE(fullPath, subRoute.handler)
 		case http.MethodHead:
-			r.HEAD(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.HEAD(fullPath, subRoute.handler)
 		case http.MethodOptions:
-			r.OPTIONS(fullPath, subRoute.handler, subRoute.middlewares...)
+			r.OPTIONS(fullPath, subRoute.handler)
 		}
 	}
 }
@@ -50,66 +50,46 @@ type Handler func(req *Request, res *Response)
 type HandleFunc func(rw http.ResponseWriter, r *http.Request)
 
 func (ro *Router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	req := NewRequest(r)
-	res := NewResponse(rw)
+	ro.mux.ServeHTTP(rw, r)
+}
 
-	if node, ok := ro.handlers[r.Method][r.URL.Path]; ok {
-		cont := traverseGlobalMiddlewares(req, res)
-		if !cont {
-			return
-		}
+func adapter(handler Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := NewRequest(r)
+		res := NewResponse(w)
 
-		if len(node.middlewares) > 0 {
-			cont = traverseLocalMiddlewares(req, res, node.middlewares)
-			if !cont {
-				return
-			}
-		}
-
-		node.handler(req, res)
-		return
+		handler(req, res)
 	}
-
-	http.NotFound(rw, r)
 }
 
-func (r *Router) register(method, path string, handler Handler, middlewares []Middleware) {
-	if _, exists := r.handlers[method]; !exists {
-		r.handlers[method] = make(map[string]handlerNode)
-	}
-
-	node := handlerNode{
-		handler:     handler,
-		middlewares: middlewares,
-	}
-
-	r.handlers[method][path] = node
+func (r *Router) register(method, path string, handler Handler) {
+	r.mux.HandleFunc(fmt.Sprintf("%s %s", method, path), adapter(handler))
 }
 
-func (r *Router) GET(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodGet, path, handler, middlewares)
+func (r *Router) GET(path string, handler Handler) {
+	r.register(http.MethodGet, path, handler)
 }
 
-func (r *Router) POST(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodPost, path, handler, middlewares)
+func (r *Router) POST(path string, handler Handler) {
+	r.register(http.MethodPost, path, handler)
 }
 
-func (r *Router) PUT(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodPut, path, handler, middlewares)
+func (r *Router) PUT(path string, handler Handler) {
+	r.register(http.MethodPut, path, handler)
 }
 
-func (r *Router) PATCH(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodPatch, path, handler, middlewares)
+func (r *Router) PATCH(path string, handler Handler) {
+	r.register(http.MethodPatch, path, handler)
 }
 
-func (r *Router) DELETE(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodDelete, path, handler, middlewares)
+func (r *Router) DELETE(path string, handler Handler) {
+	r.register(http.MethodDelete, path, handler)
 }
 
-func (r *Router) HEAD(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodHead, path, handler, middlewares)
+func (r *Router) HEAD(path string, handler Handler) {
+	r.register(http.MethodHead, path, handler)
 }
 
-func (r *Router) OPTIONS(path string, handler Handler, middlewares ...Middleware) {
-	r.register(http.MethodOptions, path, handler, middlewares)
+func (r *Router) OPTIONS(path string, handler Handler) {
+	r.register(http.MethodOptions, path, handler)
 }

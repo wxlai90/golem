@@ -3,6 +3,7 @@
 <img style="display: block;width:250px;margin: 0 auto;" src="https://static.wikia.nocookie.net/clashofclans/images/c/c2/Golem_info.png/revision/latest?cb=20170927231256" />
 
 Resembles Express for Node, features are implemented on a need basis.
+Revamping after Go's 1.22 net/http changes.
 
 ### To install
 

@@ -1,8 +1,10 @@
 package golem
 
+import "net/http"
+
 func New() *Router {
 	return &Router{
-		handlers: make(map[string]map[string]handlerNode),
+		mux: http.NewServeMux(),
 	}
 }
 

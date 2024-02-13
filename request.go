@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -20,7 +19,6 @@ func (b *Body) Unmarshal(m interface{}) error {
 type Request struct {
 	*http.Request
 	Cookies    map[string]string
-	Params     map[string]string
 	Query      map[string]string
 	Bag        Bag
 	Body       *Body
@@ -81,7 +79,7 @@ func (r *Request) parseRequestBody() {
 		RawBytes: body,
 	}
 
-	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	r.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 }
 
 func (r *Request) initBag() {
@@ -98,4 +96,8 @@ func (r *Request) Put(key string, value interface{}) {
 func (r *Request) Get(key string) (interface{}, bool) {
 	value, ok := r.Bag.bag[key]
 	return value, ok
+}
+
+func (r *Request) Params(name string) string {
+	return r.PathValue(name)
 }

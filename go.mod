@@ -1,3 +1,3 @@
 module github.com/wxlai90/golem
 
-go 1.16
+go 1.22

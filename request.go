@@ -7,16 +7,16 @@ import (
 )
 
 type Body struct {
-	r http.Request
+	request *http.Request
 }
 
 func (b *Body) Unmarshal(m interface{}) error {
-	body := b.r.Body
+	body := b.request.Body
 	bs, err := io.ReadAll(body)
 	if err != nil {
 		return err
 	}
-	defer b.r.Body.Close()
+	defer b.request.Body.Close()
 
 	return json.Unmarshal(bs, m)
 }
@@ -30,6 +30,9 @@ type Request struct {
 func NewRequest(r *http.Request) *Request {
 	req := Request{
 		Request: r,
+		Body: &Body{
+			request: r,
+		},
 	}
 	req.parseQueries()
 

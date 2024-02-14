@@ -1,63 +1,57 @@
 package golem
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
 type Body struct {
-	RawBytes []byte
+	r http.Request
 }
 
 func (b *Body) Unmarshal(m interface{}) error {
-	return json.Unmarshal(b.RawBytes, m)
+	body := b.r.Body
+	bs, err := io.ReadAll(body)
+	if err != nil {
+		return err
+	}
+	defer b.r.Body.Close()
+
+	return json.Unmarshal(bs, m)
 }
 
 type Request struct {
 	*http.Request
-	Cookies    map[string]string
-	Query      map[string]string
-	Bag        Bag
-	Body       *Body
-	FormValues map[string]string
-	File       []byte
-}
-
-type Bag struct {
-	bag map[string]interface{}
+	Query map[string]string
+	Body  *Body
 }
 
 func NewRequest(r *http.Request) *Request {
 	req := Request{
 		Request: r,
 	}
-
-	req.initBag()
-	req.parseCookies()
 	req.parseQueries()
-	req.ParseForm()
-	req.parseRequestBody()
 
 	return &req
 }
 
-func (r *Request) parseCookies() {
-	r.Cookies = map[string]string{}
+func (r *Request) GetCookie(name string) string {
 	for _, cookie := range r.Request.Cookies() {
-		r.Cookies[cookie.Name] = cookie.Value
+		if cookie.Name == name {
+			return cookie.Value
+		}
 	}
+
+	return ""
 }
 
-func (r *Request) parseForm() {
-	MAX_MEMORY := int64(32 << 20)
-	r.ParseMultipartForm(MAX_MEMORY)
-
-	for k, v := range r.Form {
-		r.FormValues[k] = v[0]
+func (r *Request) GetQuery(name string) string {
+	if val, ok := r.Query[name]; ok {
+		return val
 	}
+
+	return ""
 }
 
 func (r *Request) parseQueries() {
@@ -68,36 +62,16 @@ func (r *Request) parseQueries() {
 	}
 }
 
-func (r *Request) parseRequestBody() {
-	body, err := io.ReadAll(r.Request.Body)
-	if err != nil {
-		log.Panicln(err)
-	}
-	r.Request.Body.Close()
-
-	r.Body = &Body{
-		RawBytes: body,
-	}
-
-	r.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-}
-
-func (r *Request) initBag() {
-	r.Bag = Bag{
-		bag: map[string]interface{}{},
-	}
-}
-
-func (r *Request) Put(key string, value interface{}) {
-	// ignore possibility of overwriting
-	r.Bag.bag[key] = value
-}
-
-func (r *Request) Get(key string) (interface{}, bool) {
-	value, ok := r.Bag.bag[key]
-	return value, ok
-}
-
 func (r *Request) Params(name string) string {
 	return r.PathValue(name)
+}
+
+func Decode[T any](data []byte) (T, error) {
+	var t T
+	err := json.Unmarshal(data, &t)
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
 }

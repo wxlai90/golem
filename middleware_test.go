@@ -1,6 +1,8 @@
 package golem
 
-import "testing"
+import (
+	"testing"
+)
 
 var (
 	router         *Router
@@ -9,21 +11,19 @@ var (
 	stopMiddleware = func(req *Request, res *Response, next Next) {}
 )
 
-type mock struct{}
-
 func TestUse(t *testing.T) {
 	testcases := []struct {
 		desc        string
 		middlewares []Middleware
 	}{
 		{
-			desc: "should initialize linkedlist when there are middlewares",
+			desc: "should register middleware when middlewares are defined",
 			middlewares: []Middleware{
 				mockMiddleware,
 			},
 		},
 		{
-			desc: "should add more nodes into middlewares linkedlist",
+			desc: "should add more nodes into middlewares slice",
 			middlewares: []Middleware{
 				mockMiddleware,
 				mockMiddleware,
@@ -33,12 +33,13 @@ func TestUse(t *testing.T) {
 
 	for _, test := range testcases {
 		t.Run(test.desc, func(t *testing.T) {
+			globalMiddlewares = []Middleware{}
 			for _, middleware := range test.middlewares {
 				router.Use(middleware)
 			}
 
-			if head == nil || curr == nil {
-				t.Errorf("middlewares uninitialized")
+			if len(globalMiddlewares) != len(test.middlewares) {
+				t.Errorf("expected %d, gotten %d\n", len(test.middlewares), len(globalMiddlewares))
 			}
 		})
 	}
@@ -48,50 +49,29 @@ func TestTraverseGlobalMiddlewares(t *testing.T) {
 	req := &Request{}
 	res := &Response{}
 
-	contLL := &middlewareNode{
-		middleware: contMiddleware,
-	}
-
-	contLL.next = &middlewareNode{
-		middleware: contMiddleware,
-	}
-
-	contLL.next.next = &middlewareNode{
-		middleware: contMiddleware,
-	}
-
-	stopLL := &middlewareNode{
-		middleware: contMiddleware,
-	}
-
-	stopLL.next = &middlewareNode{
-		middleware: stopMiddleware,
-	}
-
-	stopLL.next.next = &middlewareNode{
-		middleware: contMiddleware,
-	}
-
 	testcases := []struct {
 		desc           string
-		head           *middlewareNode
+		middleware     Middleware
 		shouldContinue bool
 	}{
 		{
 			desc:           "should call middlewares fully if next is called",
-			head:           contLL,
+			middleware:     contMiddleware,
 			shouldContinue: true,
 		},
 		{
 			desc:           "should call middlewares but stop if next is not called",
-			head:           stopLL,
+			middleware:     stopMiddleware,
 			shouldContinue: false,
 		},
 	}
 
 	for _, test := range testcases {
 		t.Run(test.desc, func(t *testing.T) {
-			head = test.head
+			globalMiddlewares = []Middleware{
+				test.middleware,
+			}
+
 			gotten := traverseGlobalMiddlewares(req, res)
 
 			if gotten != test.shouldContinue {
@@ -136,7 +116,7 @@ func TestTraverseLocalMiddlewares(t *testing.T) {
 
 	for _, test := range testcases {
 		t.Run(test.desc, func(t *testing.T) {
-			gotten := traverseLocalMiddlewares(req, res, test.middlewares)
+			gotten := traverseMiddlewares(req, res, test.middlewares)
 
 			if gotten != test.shouldContinue {
 				t.Errorf("Expected %v, Gotten %v\n", test.shouldContinue, gotten)

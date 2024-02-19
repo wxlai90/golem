@@ -35,7 +35,7 @@ func TestNewResponse(t *testing.T) {
 	}
 }
 
-func TestJSON(t *testing.T) {
+func TestJson(t *testing.T) {
 	expected := []byte(`{"Name":"abc"}`)
 	expected = append(expected, 0xa)
 	m := &mockResponseWriter{}
@@ -45,7 +45,7 @@ func TestJSON(t *testing.T) {
 	}{
 		Name: "abc",
 	}
-	r.JSON(payload)
+	r.Json(payload)
 
 	if string(m.written) != string(expected) {
 		t.Errorf("Expected %s, Gotten %s\n", expected, m.written)

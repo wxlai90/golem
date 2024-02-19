@@ -18,7 +18,7 @@ func NewResponse(w http.ResponseWriter) *Response {
 	return &res
 }
 
-func (r Response) JSON(response interface{}) {
+func (r Response) Json(response interface{}) {
 	r.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(r).Encode(response)
 }

@@ -51,7 +51,7 @@ func main() {
 			},
 		}
 
-		res.JSON(todos)
+		res.Json(todos)
 	})
 
 	app.Listen(PORT, func() {
@@ -172,7 +172,7 @@ In order to cater to any type, Get() returns an empty interface
 interface{}
 ```
 
-A type assertion is required for any meaningful usage. However, if we were simply returning it as JSON, then type assertion is optional.
+A type assertion is required for any meaningful usage. However, if we were simply returning it as Json, then type assertion is optional.
 
 Example
 
@@ -196,7 +196,7 @@ func main() {
 
 	app.GET("/", func(req *golem.Request, res *golem.Response) {
 		if todo, ok := req.Get("todo"); ok {
-			res.JSON(todo)
+			res.Json(todo)
 			return
 		}
 
